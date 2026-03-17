@@ -320,25 +320,25 @@ namespace UniT.Audio
 
             public void Load(AudioClip clip)
             {
-                this.clipToSource.TryAdd(clip, () =>
+                this.clipToSource.TryAdd(clip, state =>
                 {
-                    var source = this.manager.sourcePool.DequeueOrDefault(() => this.manager.sourcesContainer.AddComponent<AudioSource>());
-                    this.Configure(source);
-                    source.clip = clip;
+                    var source = state.@this.manager.sourcePool.DequeueOrDefault(() => state.@this.manager.sourcesContainer.AddComponent<AudioSource>());
+                    state.@this.Configure(source);
+                    source.clip = state.clip;
                     return source;
-                });
+                }, (@this: this, clip));
             }
 
             public void Load(object key)
             {
-                var clip = this.keyToClip.GetOrAdd(key, () => this.manager.assetsManager.Load<AudioClip>(key));
+                var clip = this.keyToClip.GetOrAdd(key, state => state.assetsManager.Load<AudioClip>(state.key), (this.manager.assetsManager, key));
                 this.Load(clip);
             }
 
             #if UNIT_UNITASK
             public async UniTask LoadAsync(object key, IProgress<float>? progress, CancellationToken cancellationToken)
             {
-                var clip = await this.keyToClip.GetOrAddAsync(key, () => this.manager.assetsManager.LoadAsync<AudioClip>(key, progress, cancellationToken));
+                var clip = await this.keyToClip.GetOrAddAsync(key, state => state.assetsManager.LoadAsync<AudioClip>(state.key, state.progress, state.cancellationToken), (this.manager.assetsManager, key, progress, cancellationToken));
                 this.Load(clip);
             }
             #else
@@ -364,7 +364,7 @@ namespace UniT.Audio
 
             public void PlayOneShot(object key)
             {
-                var clip = this.keyToClip.GetOrAdd(key, () => this.manager.assetsManager.Load<AudioClip>(key));
+                var clip = this.keyToClip.GetOrAdd(key, state => state.assetsManager.Load<AudioClip>(state.key), (this.manager.assetsManager, key));
                 this.PlayOneShot(clip);
             }
 
@@ -379,7 +379,7 @@ namespace UniT.Audio
 
             public void Play(object key, bool loop, bool force)
             {
-                var clip = this.keyToClip.GetOrAdd(key, () => this.manager.assetsManager.Load<AudioClip>(key));
+                var clip = this.keyToClip.GetOrAdd(key, state => state.assetsManager.Load<AudioClip>(state.key), (this.manager.assetsManager, key));
                 this.Play(clip, loop, force);
             }
 
