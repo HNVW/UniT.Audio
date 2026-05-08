@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 namespace UniT.Audio
 {
     public interface IAudioManagerSettings
