@@ -16,7 +16,7 @@ namespace UniT.Audio
     using System.Collections;
     #endif
 
-    public sealed class AudioPool
+    public sealed class AudioPool : IDisposable
     {
         private readonly AudioSettings      masterSettings;
         private readonly IAssetsManager     assetsManager;
@@ -93,17 +93,17 @@ namespace UniT.Audio
             this.Load(clip);
         }
         #else
-            public IEnumerator LoadAsync(object key, Action? callback, IProgress<float>? progress)
-            {
-                var clip = default(AudioClip)!;
-                yield return this.keyToClip.GetOrAddAsync(
-                    key,
-                    callback => this.assetsManager.LoadAsync(key, callback, progress),
-                    result => clip = result
-                );
-                this.Load(clip);
-                callback?.Invoke();
-            }
+        public IEnumerator LoadAsync(object key, Action? callback, IProgress<float>? progress)
+        {
+            var clip = default(AudioClip)!;
+            yield return this.keyToClip.GetOrAddAsync(
+                key,
+                callback => this.assetsManager.LoadAsync(key, callback, progress),
+                result => clip = result
+            );
+            this.Load(clip);
+            callback?.Invoke();
+        }
         #endif
 
         public void PlayOneShot(AudioClip clip)
@@ -228,10 +228,13 @@ namespace UniT.Audio
         public void Unload(AudioClip clip)
         {
             if (!this.TryGetSource(clip, out var source)) return;
-            source.Stop();
-            source.clip = null;
+            if (source)
+            {
+                source.Stop();
+                source.clip = null;
+                this.sourcePool.Push(source);
+            }
             this.clipToSource.Remove(clip);
-            this.sourcePool.Push(source);
             this.logger.Debug($"Unloaded {clip.name}");
         }
 
@@ -298,7 +301,7 @@ namespace UniT.Audio
                 #if !UNITY_WEBGL
                 return state.assetsManager.Load<AudioClip>(state.key);
                 #else
-                    throw new NotSupportedException("Cannot directly Play with key on WebGL. Please preload it with `LoadAsync`.");
+                throw new NotSupportedException("Cannot directly Play with key on WebGL. Please preload it with `LoadAsync`.");
                 #endif
             }, (this.assetsManager, key));
         }
@@ -318,5 +321,12 @@ namespace UniT.Audio
         }
 
         #endregion
+
+        public void Dispose()
+        {
+            this.registeredSources.Clear();
+            this.keyToClip.Keys.SafeForEach(this.Unload);
+            this.clipToSource.Keys.SafeForEach(this.Unload);
+        }
     }
 }

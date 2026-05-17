@@ -8,6 +8,8 @@ namespace UniT.Audio
     using UniT.ResourceManagement;
     using UnityEngine;
     using UnityEngine.Scripting;
+    using ILogger = UniT.Logging.ILogger;
+    using Object = UnityEngine.Object;
     #if UNIT_UNITASK
     using System.Threading;
     using Cysharp.Threading.Tasks;
@@ -19,21 +21,23 @@ namespace UniT.Audio
     {
         #region Constructor
 
-        private readonly AudioSettings masterSettings = new();
-        private readonly AudioPool     soundPool;
-        private readonly AudioPool     musicPool;
+        private readonly ILogger logger;
+
+        private readonly GameObject         sourceContainer = new GameObject(nameof(AudioManager)).DontDestroyOnLoad();
+        private readonly Stack<AudioSource> sourcePool      = new();
+        private readonly AudioSettings      masterSettings  = new();
+        private readonly AudioPool          soundPool;
+        private readonly AudioPool          musicPool;
 
         [Preserve]
         public AudioManager(IAssetsManager assetsManager, ILoggerManager loggerManager)
         {
-            var sourceContainer = new GameObject(nameof(AudioManager)).DontDestroyOnLoad();
-            var sourcePool      = new Stack<AudioSource>();
-            var logger          = loggerManager.GetLogger(this);
+            this.logger = loggerManager.GetLogger(this);
 
-            this.soundPool = new(this.masterSettings, assetsManager, sourceContainer, sourcePool, logger);
-            this.musicPool = new(this.masterSettings, assetsManager, sourceContainer, sourcePool, logger);
+            this.soundPool = new(this.masterSettings, assetsManager, this.sourceContainer, this.sourcePool, this.logger);
+            this.musicPool = new(this.masterSettings, assetsManager, this.sourceContainer, this.sourcePool, this.logger);
 
-            logger.Debug("Constructed");
+            this.logger.Debug("Constructed");
         }
 
         #endregion
@@ -243,6 +247,30 @@ namespace UniT.Audio
         {
             this.musicPool.UnloadAll();
             this.playingMusic = null;
+        }
+
+        #endregion
+
+        #region Finalizer
+
+        private void Dispose()
+        {
+            this.soundPool.Dispose();
+            this.musicPool.Dispose();
+            this.sourcePool.Clear();
+            if (this.sourceContainer) Object.Destroy(this.sourceContainer);
+        }
+
+        void IDisposable.Dispose()
+        {
+            this.Dispose();
+            this.logger.Debug("Disposed");
+        }
+
+        ~AudioManager()
+        {
+            this.Dispose();
+            this.logger.Debug("Finalized");
         }
 
         #endregion

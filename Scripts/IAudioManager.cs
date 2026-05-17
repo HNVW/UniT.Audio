@@ -10,7 +10,7 @@ namespace UniT.Audio
     using System.Collections;
     #endif
 
-    public interface IAudioManager
+    public interface IAudioManager : IDisposable
     {
         #region Sound
 
