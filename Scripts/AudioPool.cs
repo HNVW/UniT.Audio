@@ -4,17 +4,14 @@ namespace UniT.Audio
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Threading;
+    using Cysharp.Threading.Tasks;
     using UniT.Extensions;
+    using UniT.Extensions.UniTask;
     using UniT.Logging;
     using UniT.ResourceManagement;
     using UnityEngine;
     using ILogger = UniT.Logging.ILogger;
-    #if UNIT_UNITASK
-    using System.Threading;
-    using Cysharp.Threading.Tasks;
-    #else
-    using System.Collections;
-    #endif
 
     public sealed class AudioPool : IDisposable
     {
@@ -78,33 +75,11 @@ namespace UniT.Audio
             }, (@this: this, clip));
         }
 
-        #if !UNITY_WEBGL
-        public void Load(object key)
-        {
-            var clip = this.keyToClip.GetOrAdd(key, static state => state.assetsManager.Load<AudioClip>(state.key), (this.assetsManager, key));
-            this.Load(clip);
-        }
-        #endif
-
-        #if UNIT_UNITASK
         public async UniTask LoadAsync(object key, IProgress<float>? progress, CancellationToken cancellationToken)
         {
             var clip = await this.keyToClip.GetOrAddAsync(key, static state => state.assetsManager.LoadAsync<AudioClip>(state.key, state.progress, state.cancellationToken), (this.assetsManager, key, progress, cancellationToken));
             this.Load(clip);
         }
-        #else
-        public IEnumerator LoadAsync(object key, Action? callback, IProgress<float>? progress)
-        {
-            var clip = default(AudioClip)!;
-            yield return this.keyToClip.GetOrAddAsync(
-                key,
-                callback => this.assetsManager.LoadAsync(key, callback, progress),
-                result => clip = result
-            );
-            this.Load(clip);
-            callback?.Invoke();
-        }
-        #endif
 
         public void PlayOneShot(AudioClip clip)
         {
@@ -115,7 +90,7 @@ namespace UniT.Audio
 
         public void PlayOneShot(object key)
         {
-            var clip = this.GetOrLoadClip(key);
+            if (!this.keyToClip.TryGetValue(key, out var clip)) throw new InvalidOperationException($"{key} not loaded. Load it with `LoadAsync`.");
             this.PlayOneShot(clip);
         }
 
@@ -130,7 +105,7 @@ namespace UniT.Audio
 
         public void Play(object key, bool loop, bool force)
         {
-            var clip = this.GetOrLoadClip(key);
+            if (!this.keyToClip.TryGetValue(key, out var clip)) throw new InvalidOperationException($"{key} not loaded. Load it with `LoadAsync`.");
             this.Play(clip, loop, force);
         }
 
@@ -290,20 +265,8 @@ namespace UniT.Audio
         {
             if (this.clipToSource.TryGetValue(clip, out var source)) return source;
             source = this.Load(clip);
-            this.logger.Warning($"Auto loaded {clip.name}. Consider preload it with `Load` or `LoadAsync` for better performance.");
+            this.logger.Warning($"Auto loaded {clip.name}. Consider preload it with `Load` for better performance.");
             return source;
-        }
-
-        private AudioClip GetOrLoadClip(object key)
-        {
-            return this.keyToClip.GetOrAdd(key, static state =>
-            {
-                #if !UNITY_WEBGL
-                return state.assetsManager.Load<AudioClip>(state.key);
-                #else
-                throw new NotSupportedException("Cannot directly Play with key on WebGL. Please preload it with `LoadAsync`.");
-                #endif
-            }, (this.assetsManager, key));
         }
 
         private bool TryGetSource(AudioClip clip, [MaybeNullWhen(false)] out AudioSource source)

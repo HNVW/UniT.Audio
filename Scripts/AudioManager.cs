@@ -3,6 +3,8 @@ namespace UniT.Audio
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading;
+    using Cysharp.Threading.Tasks;
     using UniT.Extensions;
     using UniT.Logging;
     using UniT.ResourceManagement;
@@ -10,14 +12,8 @@ namespace UniT.Audio
     using UnityEngine.Scripting;
     using ILogger = UniT.Logging.ILogger;
     using Object = UnityEngine.Object;
-    #if UNIT_UNITASK
-    using System.Threading;
-    using Cysharp.Threading.Tasks;
-    #else
-    using System.Collections;
-    #endif
 
-    public sealed class AudioManager : IAudioManagerSettings, IAudioManager
+    public sealed class AudioManager : IAudioManager, IAudioManagerSettings
     {
         #region Constructor
 
@@ -66,15 +62,7 @@ namespace UniT.Audio
 
         void IAudioManager.LoadSound(AudioClip clip) => this.soundPool.Load(clip);
 
-        #if !UNITY_WEBGL
-        void IAudioManager.LoadSound(object key) => this.soundPool.Load(key);
-        #endif
-
-        #if UNIT_UNITASK
         UniTask IAudioManager.LoadSoundAsync(object key, IProgress<float>? progress, CancellationToken cancellationToken) => this.soundPool.LoadAsync(key, progress, cancellationToken);
-        #else
-        IEnumerator IAudioManager.LoadSoundAsync(object key, Action? callback, IProgress<float>? progress) => this.soundPool.LoadAsync(key, callback, progress);
-        #endif
 
         void IAudioManager.PlaySoundOneShot(AudioClip clip) => this.soundPool.PlayOneShot(clip);
 
@@ -136,19 +124,11 @@ namespace UniT.Audio
 
         void IAudioManager.LoadMusic(AudioClip clip) => this.musicPool.Load(clip);
 
-        #if !UNITY_WEBGL
-        void IAudioManager.LoadMusic(object key) => this.musicPool.Load(key);
-        #endif
-
-        #if UNIT_UNITASK
         UniTask IAudioManager.LoadMusicAsync(object key, IProgress<float>? progress, CancellationToken cancellationToken) => this.musicPool.LoadAsync(key, progress, cancellationToken);
-        #else
-        IEnumerator IAudioManager.LoadMusicAsync(object key, Action? callback, IProgress<float>? progress) => this.musicPool.LoadAsync(key, callback, progress);
-        #endif
 
         void IAudioManager.PlayMusic(AudioClip clip, bool loop, bool force)
         {
-            if (this.playingMusic is { } && !ReferenceEquals(this.playingMusic, clip))
+            if (this.playingMusic is not null && !ReferenceEquals(this.playingMusic, clip))
             {
                 this.musicPool.Stop(clip);
                 this.playingMusic = null;
@@ -159,7 +139,7 @@ namespace UniT.Audio
 
         void IAudioManager.PlayMusic(object key, bool loop, bool force)
         {
-            if (this.playingMusic is { } && this.playingMusic != key)
+            if (this.playingMusic is not null && this.playingMusic != key)
             {
                 this.musicPool.Stop(key);
                 this.playingMusic = null;
@@ -228,19 +208,13 @@ namespace UniT.Audio
         void IAudioManager.UnloadMusic(AudioClip clip)
         {
             this.musicPool.Unload(clip);
-            if (ReferenceEquals(this.playingMusic, clip))
-            {
-                this.playingMusic = null;
-            }
+            if (ReferenceEquals(this.playingMusic, clip)) this.playingMusic = null;
         }
 
         void IAudioManager.UnloadMusic(object key)
         {
             this.musicPool.Unload(key);
-            if (this.playingMusic == key)
-            {
-                this.playingMusic = null;
-            }
+            if (this.playingMusic == key) this.playingMusic = null;
         }
 
         void IAudioManager.UnloadAllMusics()

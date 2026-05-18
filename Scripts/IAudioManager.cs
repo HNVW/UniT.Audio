@@ -2,13 +2,9 @@
 namespace UniT.Audio
 {
     using System;
-    using UnityEngine;
-    #if UNIT_UNITASK
     using System.Threading;
     using Cysharp.Threading.Tasks;
-    #else
-    using System.Collections;
-    #endif
+    using UnityEngine;
 
     public interface IAudioManager : IDisposable
     {
@@ -28,9 +24,7 @@ namespace UniT.Audio
 
         public void LoadSound(AudioClip clip);
 
-        #if !UNITY_WEBGL
-        public void LoadSound(object key);
-        #endif
+        public UniTask LoadSoundAsync(object key, IProgress<float>? progress = null, CancellationToken cancellationToken = default);
 
         public void PlaySoundOneShot(AudioClip clip);
 
@@ -90,9 +84,7 @@ namespace UniT.Audio
 
         public void LoadMusic(AudioClip clip);
 
-        #if !UNITY_WEBGL
-        public void LoadMusic(object key);
-        #endif
+        public UniTask LoadMusicAsync(object key, IProgress<float>? progress = null, CancellationToken cancellationToken = default);
 
         public void PlayMusic(AudioClip clip, bool loop = true, bool force = false);
 
@@ -115,20 +107,6 @@ namespace UniT.Audio
         public void UnloadMusic(object key);
 
         public void UnloadAllMusics();
-
-        #endregion
-
-        #region Async
-
-        #if UNIT_UNITASK
-        public UniTask LoadSoundAsync(object key, IProgress<float>? progress = null, CancellationToken cancellationToken = default);
-
-        public UniTask LoadMusicAsync(object key, IProgress<float>? progress = null, CancellationToken cancellationToken = default);
-        #else
-        public IEnumerator LoadSoundAsync(object key, Action? callback = null, IProgress<float>? progress = null);
-
-        public IEnumerator LoadMusicAsync(object key, Action? callback = null, IProgress<float>? progress = null);
-        #endif
 
         #endregion
     }
