@@ -126,10 +126,9 @@ namespace UniT.Audio.Default
 
         void IAudioManager.PlayMusic(AudioClip clip, bool loop, bool force)
         {
-            if (this.playingMusic is not null && !ReferenceEquals(this.playingMusic, clip))
+            if (!ReferenceEquals(this.playingMusic, clip))
             {
-                this.musicPool.Stop(clip);
-                this.playingMusic = null;
+                this.StopMusic();
             }
             this.musicPool.Play(clip, loop, force);
             this.playingMusic = clip;
@@ -137,10 +136,9 @@ namespace UniT.Audio.Default
 
         void IAudioManager.PlayMusic(object key, bool loop, bool force)
         {
-            if (this.playingMusic is not null && this.playingMusic != key)
+            if (this.playingMusic != key)
             {
-                this.musicPool.Stop(key);
-                this.playingMusic = null;
+                this.StopMusic();
             }
             this.musicPool.Play(key, loop, force);
             this.playingMusic = key;
@@ -193,7 +191,33 @@ namespace UniT.Audio.Default
             }
         }
 
-        void IAudioManager.StopMusic()
+        void IAudioManager.StopMusic() => this.StopMusic();
+
+        void IAudioManager.UnloadMusic(AudioClip clip)
+        {
+            this.musicPool.Unload(clip);
+            if (ReferenceEquals(this.playingMusic, clip))
+            {
+                this.playingMusic = null;
+            }
+        }
+
+        void IAudioManager.UnloadMusic(object key)
+        {
+            this.musicPool.Unload(key);
+            if (this.playingMusic == key)
+            {
+                this.playingMusic = null;
+            }
+        }
+
+        void IAudioManager.UnloadAllMusics()
+        {
+            this.musicPool.UnloadAll();
+            this.playingMusic = null;
+        }
+
+        private void StopMusic()
         {
             switch (this.playingMusic)
             {
@@ -203,48 +227,15 @@ namespace UniT.Audio.Default
             this.playingMusic = null;
         }
 
-        void IAudioManager.UnloadMusic(AudioClip clip)
-        {
-            this.musicPool.Unload(clip);
-            if (ReferenceEquals(this.playingMusic, clip)) this.playingMusic = null;
-        }
-
-        void IAudioManager.UnloadMusic(object key)
-        {
-            this.musicPool.Unload(key);
-            if (this.playingMusic == key) this.playingMusic = null;
-        }
-
-        void IAudioManager.UnloadAllMusics()
-        {
-            this.musicPool.UnloadAll();
-            this.playingMusic = null;
-        }
-
         #endregion
 
-        #region Finalizer
-
-        private void Dispose()
+        void IDisposable.Dispose()
         {
             this.soundPool.Dispose();
             this.musicPool.Dispose();
             this.sourcePool.Clear();
             if (this.sourceContainer) Object.Destroy(this.sourceContainer);
-        }
-
-        void IDisposable.Dispose()
-        {
-            this.Dispose();
             this.logger.Debug("Disposed");
         }
-
-        ~AudioManager()
-        {
-            this.Dispose();
-            this.logger.Debug("Finalized");
-        }
-
-        #endregion
     }
 }

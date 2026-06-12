@@ -14,7 +14,7 @@ namespace UniT.Audio.Default
             get => this.volume;
             set
             {
-                if (value is < 0 or > 1) throw new ArgumentOutOfRangeException(nameof(value), value, "Volume must be between 0 and 1");
+                if (value is < 0 or > 1 or float.NaN) throw new ArgumentOutOfRangeException(nameof(value), value, "Volume must be between 0 and 1");
                 this.volume = value;
                 this.VolumeChanged?.Invoke();
             }
