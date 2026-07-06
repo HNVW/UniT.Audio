@@ -1,5 +1,6 @@
 {
   "name": "UniT.Audio.Default",
+  "overrideReferences": true,
   "references": [
     "UniT.Audio",
     "UniT.Extensions",

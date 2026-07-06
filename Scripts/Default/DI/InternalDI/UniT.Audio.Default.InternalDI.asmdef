@@ -1,5 +1,7 @@
 {
   "name": "UniT.Audio.Default.InternalDI",
+  "overrideReferences": true,
+  "noEngineReferences": true,
   "references": [
     "UniT.Audio.Default",
     "UniT.DI.InternalDI"
