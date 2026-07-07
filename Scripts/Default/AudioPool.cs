@@ -10,34 +10,34 @@ namespace UniT.Audio.Default
     using UniT.Logging;
     using UniT.ResourceManagement;
     using UnityEngine;
-    using ILogger = UniT.Logging.ILogger;
+    using ILogger = Logging.ILogger;
 
     public sealed class AudioPool : IAudioPool, IDisposable
     {
-        private readonly AudioSettings      masterSettings;
-        private readonly IAssetManager      assetManager;
-        private readonly GameObject         sourcesContainer;
+        private readonly AudioSettings masterSettings;
+        private readonly IAssetManager assetManager;
+        private readonly GameObject sourcesContainer;
         private readonly Stack<AudioSource> sourcePool;
-        private readonly ILogger            logger;
+        private readonly ILogger logger;
 
-        private readonly AudioSettings                      settings            = new();
-        private readonly HashSet<AudioSource>               registeredSources   = new();
-        private readonly Dictionary<object, AudioClip>      keyToClip           = new();
-        private readonly Dictionary<AudioClip, AudioSource> clipToSource        = new();
-        private readonly Dictionary<AudioSource, float>     sourceToVolumeScale = new();
+        private readonly AudioSettings settings = new();
+        private readonly HashSet<AudioSource> registeredSources = new();
+        private readonly Dictionary<object, AudioClip> keyToClip = new();
+        private readonly Dictionary<AudioClip, AudioSource> clipToSource = new();
+        private readonly Dictionary<AudioSource, float> sourceToVolumeScale = new();
 
         public AudioPool(AudioSettings masterSettings, IAssetManager assetManager, GameObject sourcesContainer, Stack<AudioSource> sourcePool, ILogger logger)
         {
-            this.masterSettings   = masterSettings;
-            this.assetManager     = assetManager;
+            this.masterSettings = masterSettings;
+            this.assetManager = assetManager;
             this.sourcesContainer = sourcesContainer;
-            this.sourcePool       = sourcePool;
-            this.logger           = logger;
+            this.sourcePool = sourcePool;
+            this.logger = logger;
 
             this.masterSettings.VolumeChanged += this.OnVolumeChanged;
-            this.masterSettings.MuteChanged   += this.OnMuteChanged;
-            this.settings.VolumeChanged       += this.OnVolumeChanged;
-            this.settings.MuteChanged         += this.OnMuteChanged;
+            this.masterSettings.MuteChanged += this.OnMuteChanged;
+            this.settings.VolumeChanged += this.OnVolumeChanged;
+            this.settings.MuteChanged += this.OnMuteChanged;
         }
 
         #region Public
@@ -341,9 +341,9 @@ namespace UniT.Audio.Default
             this.clipToSource.Keys.SafeForEach(this.Unload);
 
             this.masterSettings.VolumeChanged -= this.OnVolumeChanged;
-            this.masterSettings.MuteChanged   -= this.OnMuteChanged;
-            this.settings.VolumeChanged       -= this.OnVolumeChanged;
-            this.settings.MuteChanged         -= this.OnMuteChanged;
+            this.masterSettings.MuteChanged -= this.OnMuteChanged;
+            this.settings.VolumeChanged -= this.OnVolumeChanged;
+            this.settings.MuteChanged -= this.OnMuteChanged;
         }
     }
 }

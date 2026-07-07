@@ -8,7 +8,7 @@ namespace UniT.Audio.Default
     using UniT.ResourceManagement;
     using UnityEngine;
     using UnityEngine.Scripting;
-    using ILogger = UniT.Logging.ILogger;
+    using ILogger = Logging.ILogger;
     using Object = UnityEngine.Object;
 
     public sealed class AudioManager : IAudioManager, IDisposable
@@ -17,11 +17,11 @@ namespace UniT.Audio.Default
 
         private readonly ILogger logger;
 
-        private readonly AudioSettings      masterSettings  = new();
-        private readonly GameObject         sourceContainer = new GameObject(nameof(AudioManager)).DontDestroyOnLoad();
-        private readonly Stack<AudioSource> sourcePool      = new();
-        private readonly AudioPool          soundPool;
-        private readonly AudioPool          musicPool;
+        private readonly AudioSettings masterSettings = new();
+        private readonly GameObject sourceContainer = new GameObject(nameof(AudioManager)).DontDestroyOnLoad();
+        private readonly Stack<AudioSource> sourcePool = new();
+        private readonly AudioPool soundPool;
+        private readonly AudioPool musicPool;
 
         [Preserve]
         public AudioManager(IAssetManager assetManager, ILoggerManager loggerManager)

@@ -31,6 +31,6 @@ namespace UniT.Audio.Default
         }
 
         private float volume = 1;
-        private bool  mute   = false;
+        private bool mute = false;
     }
 }
