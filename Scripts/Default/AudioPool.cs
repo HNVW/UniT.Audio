@@ -6,9 +6,9 @@ namespace UniT.Audio.Default
     using System.Diagnostics.CodeAnalysis;
     using System.Threading;
     using Cysharp.Threading.Tasks;
-    using UniT.Extensions;
-    using UniT.Logging;
-    using UniT.ResourceManagement;
+    using Extensions;
+    using Logging;
+    using ResourceManagement;
     using UnityEngine;
     using ILogger = Logging.ILogger;
 

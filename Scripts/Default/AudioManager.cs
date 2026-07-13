@@ -3,9 +3,9 @@ namespace UniT.Audio.Default
 {
     using System;
     using System.Collections.Generic;
-    using UniT.Extensions;
-    using UniT.Logging;
-    using UniT.ResourceManagement;
+    using Extensions;
+    using Logging;
+    using ResourceManagement;
     using UnityEngine;
     using UnityEngine.Scripting;
     using ILogger = Logging.ILogger;
