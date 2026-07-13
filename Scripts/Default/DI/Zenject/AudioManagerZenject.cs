@@ -1,5 +1,5 @@
 #nullable enable
-namespace UniT.Audio.Default.DI
+namespace UniT.Audio.DI
 {
     using Zenject;
 
