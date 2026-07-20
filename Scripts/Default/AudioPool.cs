@@ -179,10 +179,11 @@ namespace UniT.Audio
         {
             this.clipToSource.TryAdd(clip, static state =>
             {
-                var source = state.@this.sourcePool.PopOrDefault(static sourcesContainer => sourcesContainer.AddComponent<AudioSource>(), state.@this.sourcesContainer);
-                source.clip = state.clip;
-                state.@this.Configure(source);
-                state.@this.logger.Debug($"Loaded {state.clip.name}");
+                var (@this, clip) = state;
+                var source = @this.sourcePool.PopOrDefault(static sourcesContainer => sourcesContainer.AddComponent<AudioSource>(), @this.sourcesContainer);
+                source.clip = clip;
+                @this.Configure(source);
+                @this.logger.Debug($"Loaded {clip.name}");
                 return source;
             }, (@this: this, clip));
         }
