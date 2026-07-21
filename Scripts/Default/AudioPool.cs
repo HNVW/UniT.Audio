@@ -278,7 +278,7 @@ namespace UniT.Audio
         {
             if (this.clipToSource.TryGetValue(clip, out var source)) return source;
             this.Load(clip);
-            this.logger.Warning($"Auto loaded {clip.name}. Consider preload it with `Load` for better performance.");
+            this.logger.Warning($"Auto loaded {clip.name}. Preload it with `Load` for better performance.");
             return this.clipToSource[clip];
         }
 
