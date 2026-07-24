@@ -305,14 +305,14 @@ namespace UniT.Audio
 
         private void OnVolumeChanged()
         {
-            this.clipToSource.ForEach(this.ConfigureVolume);
+            this.clipToSource.Values.ForEach(this.ConfigureVolume);
             this.registeredSources.ForEach(this.ConfigureVolume);
             this.volumeChanged?.Invoke();
         }
 
         private void OnMuteChanged()
         {
-            this.clipToSource.ForEach(this.ConfigureMute);
+            this.clipToSource.Values.ForEach(this.ConfigureMute);
             this.registeredSources.ForEach(this.ConfigureMute);
             this.muteChanged?.Invoke();
         }
