@@ -185,7 +185,7 @@ namespace UniT.Audio
                 @this.Configure(source);
                 @this.logger.Debug($"Loaded {clip.name}");
                 return source;
-            }, (@this: this, clip));
+            }, (this, clip));
         }
 
         private void PlayOneShot(AudioClip clip)
