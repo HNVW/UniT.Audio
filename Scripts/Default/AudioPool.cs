@@ -164,8 +164,8 @@ namespace UniT.Audio
 
         void IAudioPool.UnloadAll()
         {
-            this.keyToClip.Keys.SafeForEach(this.Unload);
-            this.clipToSource.Keys.SafeForEach(this.Unload);
+            this.keyToClip.Keys.SnapshotForEach(this.Unload);
+            this.clipToSource.Keys.SnapshotForEach(this.Unload);
         }
 
         #endregion
@@ -338,8 +338,8 @@ namespace UniT.Audio
         void IDisposable.Dispose()
         {
             this.registeredSources.Clear();
-            this.keyToClip.Keys.SafeForEach(this.Unload);
-            this.clipToSource.Keys.SafeForEach(this.Unload);
+            this.keyToClip.Keys.SnapshotForEach(this.Unload);
+            this.clipToSource.Keys.SnapshotForEach(this.Unload);
 
             this.masterSettings.VolumeChanged -= this.OnVolumeChanged;
             this.masterSettings.MuteChanged -= this.OnMuteChanged;
